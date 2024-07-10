@@ -1,0 +1,122 @@
+class Game
+{
+    static int difficulty, score;
+    field int delayCycle;
+    static int foodX, foodY;
+    field Snake snake1;
+
+    constructor Game new(Snake zmija)
+    {  
+        let score = 0;
+        let snake1 = zmija;
+
+        // start screen
+        let difficulty = Keyboard.readInt("Pick the difficulty level (1-5) and press enter: ");
+        // halt program if difficulty not in the 1-5 range
+        if ((difficulty < 1) | (difficulty > 5))
+        {
+            do Sys.halt();
+        }
+        do Screen.clearScreen();
+
+        // generating an input for food randomizer
+        do Random.generateSeed();
+
+        // draw top border, score and difficulty
+        do Output.moveCursor(0,0);
+        do Output.printString("Score: 0");
+        do Output.moveCursor(0,32);
+        do Output.printString("Difficulty: ");
+        do Output.printInt(difficulty);
+        do Screen.drawLine(0, 14, 511, 14);
+
+        // determine game (snake) speed
+        let delayCycle = 120 - (difficulty * 20);
+
+        do Game.placeFood(snake1);
+
+        return this;
+    }
+
+    method void cycle()
+    {
+        var int direction;
+        
+        let direction = Keyboard.keyPressed();
+        if (~((direction = 130) | (direction = 131) | (direction = 132) | (direction = 133)))
+        {   
+            let direction = 0;
+        }
+        do snake1.move(direction);
+
+        do Sys.wait(delayCycle);
+        return;
+    }
+
+    function void placeFood(Snake snake1)
+    {   
+        var int i;
+        var int cnt;
+        let i = 0;
+        let cnt = snake1.length();
+
+        let foodX = Random.randomX();
+        let foodY = Random.randomY();
+
+        // checking if food is gonna spawn in the snake - if so, generate new numbers
+        while(i < cnt)
+        {
+            // in case snake wraps around the array, start from index 0
+            if (snake1.tailIndex() + i = snake1.maxBodySize())  // if true we have reached the end of the array
+            {
+                let cnt = snake1.headIndex() - snake1.tailIndex(); 
+                let i = (-1) * snake1.tailIndex();   // when we perform 'tailIndex + i' in the code below it will cancel out, giving index 0
+            }
+
+            // check if food will spawn inside the snake
+            if ((foodX = snake1.partX(snake1.tailIndex() + i)) & (foodY = snake1.partY(snake1.tailIndex() + i)))
+            {
+                // load new random food coordinates
+                do Random.changeSeed();
+                let foodX = Random.randomX();
+                let foodY = Random.randomY();
+
+                // start loop from beginning (check if food spawned inside the snake again)
+                let cnt = snake1.length();
+                let i = -1;
+            }
+            let i = i + 1;
+        }
+
+        do Screen.setColor(true);
+        do Screen.drawRectangle(foodX*5,foodY*5+15,foodX*5+4,foodY*5+19); 
+
+        return;
+    }
+
+    function int foodXC()
+    {
+        return foodX;
+    }
+
+    function int foodYC()
+    {
+        return foodY;
+    }
+
+    function void deleteFood()
+    {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(foodX*5,foodY*5+15,foodX*5+4,foodY*5+19); 
+        return;
+    }
+
+    function void updateScore()
+    {
+        let score = score + 1;
+        do Output.moveCursor(0,7);
+        do Output.printInt(score);
+        return;
+    }
+
+}

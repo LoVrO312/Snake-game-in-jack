@@ -1,0 +1,57 @@
+class Random
+{
+    static int seed;
+
+    function void generateSeed()
+    {
+        var int key;
+        let key = 0;
+        do Output.moveCursor(0, 0);
+        do Output.printString("press any key to continue");
+        while(~key)
+        {
+            let seed = seed + 1;
+            if (seed < 0)
+            {
+                let seed = 0;
+            }
+            let key = Keyboard.keyPressed();
+        }
+        do Screen.clearScreen();
+        
+        return;
+    }
+
+    function void changeSeed()
+    {
+        let seed = seed + 17393; // adding random prime number to make the food placement seem more random
+        if (seed < 0)
+        {
+            let seed = seed + 32767 + 1;
+        }
+        return;
+    }
+
+    // outputs a random value in the range [0,101]
+    function int randomX()
+    {
+        var int x;
+
+        let x = seed - ((seed/151) * 151); // modulo 151 for random even or odd number
+        let x = x - ((x/102) * 102);       // modulo 102 for random X coordinate
+
+        return x; 
+    }
+
+    // outputs a random value in the range [0,47]
+    function int randomY()
+    {
+        var int y;
+
+        let y = seed - ((seed/149) * 149); // modulo 149 for random even or odd number
+        let y = y - ((y/48) * 48);       // modulo 48 for random Y coordinate      
+
+        return y; 
+    }
+
+}

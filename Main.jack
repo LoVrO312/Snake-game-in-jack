@@ -1,0 +1,23 @@
+class Main
+{
+    function void main()
+    {
+        var Snake zmija;
+        var Game igra;
+        var int maxLength;
+        
+        let maxLength = 128; // max length of the snake the program registers a hitbox for.
+                             // if exceeeded the snake will be able to go through a part of itself.
+                             // set accordingly.
+
+        let zmija = Snake.new(maxLength);
+        let igra = Game.new(zmija);
+
+        // main game loop
+        while(true)
+        {
+            do igra.cycle();
+        }
+        return;
+    }
+}

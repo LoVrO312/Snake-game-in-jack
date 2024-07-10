@@ -1,0 +1,21 @@
+function Main.main 3
+push constant 128
+pop local 2
+push local 2
+call Snake.new 1
+pop local 0
+push local 0
+call Game.new 1
+pop local 1
+label WHILE_EXP0
+push constant 0
+not
+not
+if-goto WHILE_END0
+push local 1
+call Game.cycle 1
+pop temp 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return

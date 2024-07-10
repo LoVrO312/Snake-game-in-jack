@@ -1,0 +1,232 @@
+class Snake
+{
+    field int length, prevDir;
+    field int tailIndex, headIndex;
+    field int maxBodySize;
+    field Array snakeBodyX, snakeBodyY;
+
+    constructor Snake new(int maxLength)
+    {
+        var int i;
+        let i = 0;
+
+        let length = 3; // excluding the head
+        let prevDir = 130; // setting start direction to go left
+        let maxBodySize = maxLength;
+
+        // setting array for tracking snake body parts
+        let tailIndex = 0;
+        let headIndex = 3;
+        let snakeBodyX = Array.new(maxLength);
+        let snakeBodyY = Array.new(maxLength);
+        
+        // spawn snake in center
+        // 102x48 grid (0..101 x 0..47)
+        while (i < 4)
+        {
+            let snakeBodyX[i] = 51 - i;
+            let snakeBodyY[i] = 24;
+            do drawPart(snakeBodyX[i], snakeBodyY[i]);
+            let i = i + 1;
+        }
+        return this;
+    }
+
+    method void move(int dir)
+    {
+        var int oldHeadX, oldHeadY;
+        let oldHeadX = snakeBodyX[headIndex];
+        let oldHeadY = snakeBodyY[headIndex];
+
+        let headIndex = headIndex + 1;
+        // if exceeded array bounds, go back to index 0
+        if (headIndex = maxBodySize)
+        {
+            let headIndex = 0;
+        }
+
+        // left = 130, up = 131, right = 132, down = 133, 0 = no input - previous direction
+        if (dir = 0)
+        {
+            let dir = prevDir;
+        }
+
+        if (dir = 130)
+        {
+            if (prevDir = 132)
+            {
+                let snakeBodyX[headIndex] = oldHeadX + 1;
+                let snakeBodyY[headIndex] = oldHeadY;
+            }else
+            {
+                let snakeBodyX[headIndex] = oldHeadX - 1;
+                let snakeBodyY[headIndex] = oldHeadY;
+                let prevDir = dir;            
+            }
+        }
+        if (dir = 131)
+        {
+            if (prevDir = 133)
+            {
+                let snakeBodyY[headIndex] = oldHeadY + 1;
+                let snakeBodyX[headIndex] = oldHeadX;
+            }else
+            {
+                let snakeBodyY[headIndex] = oldHeadY - 1;
+                let snakeBodyX[headIndex] = oldHeadX;
+                let prevDir = dir;
+            }
+        }
+        if (dir = 132)
+        {
+            if (prevDir = 130)
+            {
+                let snakeBodyX[headIndex] = oldHeadX - 1;
+                let snakeBodyY[headIndex] = oldHeadY;
+            }else
+            {
+                let snakeBodyX[headIndex] = oldHeadX + 1;
+                let snakeBodyY[headIndex] = oldHeadY;
+                let prevDir = dir;
+            }
+        }
+        if (dir = 133)
+        {
+            if (prevDir = 131)
+            {
+                let snakeBodyY[headIndex] = oldHeadY - 1;
+                let snakeBodyX[headIndex] = oldHeadX;   
+            }else
+            {
+                let snakeBodyY[headIndex] = oldHeadY + 1;
+                let snakeBodyX[headIndex] = oldHeadX;
+                let prevDir = dir;
+            }
+        }
+
+        do checkCollision();
+
+        if(~tryEat())
+        {
+            do deletePart(snakeBodyX[tailIndex], snakeBodyY[tailIndex]);
+            let tailIndex = tailIndex + 1;
+        }
+
+        if (tailIndex = maxBodySize)
+        {
+            let tailIndex = 0;
+        }
+
+
+        do drawPart(snakeBodyX[headIndex], snakeBodyY[headIndex]);
+
+        return;   
+    }
+
+    // drawing part of snake
+    method void drawPart(int x, int y)
+    {
+        do Screen.setColor(true);
+        do Screen.drawRectangle(x*5,y*5+15,x*5+4,y*5+19); 
+        return;
+    }
+
+    // deleting part of snake
+    method void deletePart(int x, int y)
+    {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x*5,y*5+15,x*5+4,y*5+19); 
+        return;
+    }
+
+    // checks if snake will collide with itself or border
+    method void checkCollision()
+    {
+        var int i;
+        var int cnt;
+        let i = 0;
+        let cnt = length;
+
+        // check if snake went off grid
+        if((snakeBodyX[headIndex] > 101) | (snakeBodyY[headIndex] > 47) | (snakeBodyX[headIndex] < 0) | (snakeBodyY[headIndex] < 0))
+        {
+            do Sys.halt();
+        }
+
+        // check if snake collided with self
+        while(i < cnt)
+        {
+            // when the snake wraps around the array
+            if (tailIndex + i = maxBodySize)  // if true we have reached the end of the array
+            {
+                let cnt = headIndex - tailIndex; 
+                let i = (-1) * tailIndex;   // when we perform 'tailIndex + i' in the code below it will cancel out, giving index 0
+            }
+
+            if((snakeBodyX[headIndex] = snakeBodyX[tailIndex + i]) & (snakeBodyY[headIndex] = snakeBodyY[tailIndex + i]))
+            {
+                do Sys.halt();
+            }
+            let i = i + 1;
+        }
+
+        return;
+    }
+    
+    method int headX()
+    {
+        return snakeBodyX[headIndex];
+    }
+
+    method int headY()
+    {
+        return snakeBodyY[headIndex];
+    }
+
+    method int partX(int index)
+    {
+        return snakeBodyX[index];
+    }
+
+    method int partY(int index)
+    {
+        return snakeBodyY[index];
+    }
+
+    method int maxBodySize()
+    {
+        return maxBodySize;
+    }
+
+    method int tailIndex()
+    {
+        return tailIndex;
+    }
+
+    method int headIndex()
+    {
+        return headIndex;
+    }
+
+    method int length()
+    {
+        return length;
+    }
+
+    method boolean tryEat()
+    {
+        if ((headX() = Game.foodXC()) & (headY() = Game.foodYC()))
+        {
+            let length = length + 1;
+            do Game.deleteFood();
+            do Random.changeSeed();
+            do Game.placeFood(this);
+
+            do Game.updateScore();
+
+            return true;
+        }
+        return false;
+    }
+
+}
